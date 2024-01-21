@@ -34,7 +34,7 @@ styles_main_window = """
             }
 
             QListWidget::item:selected {
-                background-color: #a
+                background-color: #0056b3
                 }
             QVBoxLayout::item:selected {
                 background-color: #0056b3

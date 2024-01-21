@@ -4,7 +4,7 @@ from app.views.main_window import MainWindow
 
 def main():
     app = QApplication(sys.argv)
-    app.setStyle("Fusion")
+
     main_window = MainWindow()
     main_window.setGeometry(500, 500, 500, 500)
     main_window.show()

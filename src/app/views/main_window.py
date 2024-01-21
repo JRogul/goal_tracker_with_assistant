@@ -1,6 +1,8 @@
 from PyQt5.QtWidgets import QMainWindow, QLabel, QVBoxLayout, QWidget, QListWidget, QLineEdit, QPushButton, QDialog, QListWidgetItem
 from app.controllers.goal_controller import GoalController
 from app.views.styles import styles_main_window
+from app.models.database_connection import *
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -37,18 +39,20 @@ class MainWindow(QMainWindow):
     def add_goal(self):
         title = self.title_input.text()
         description = self.description_input.text()
+        ID_task = len(self.goal_list)
+        print(ID_task)
         self.goal_controller.add_goal(title, description)
         self.goal_list.addItem(f"{title}")
         self.title_input.clear()
         self.description_input.clear()
-
+        insert_task(title, description)
 
 
 class DetailWindow(QDialog):
     def __init__(self, item_text, parent=None):
         super().__init__(parent)
         self.setWindowTitle(f"{item_text}")
-        
+        self.setGeometry(500, 500, 500, 500)
         layout = QVBoxLayout()
         self.label = QLabel(item_text)
         layout.addWidget(self.label)
