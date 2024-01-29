@@ -1,9 +1,12 @@
-from PyQt5.QtWidgets import QCalendarWidget, QMainWindow, QDateEdit, QLabel, QVBoxLayout, QWidget, QListWidget, QLineEdit, QPushButton, QDialog, QListWidgetItem
+from PyQt5.QtWidgets import QCalendarWidget, QDateTimeEdit, QMainWindow, \
+    QDateEdit, QLabel, QVBoxLayout, QWidget, QListWidget, QLineEdit, QPushButton, QDialog, QListWidgetItem
 from PyQt5.QtGui import QFont
 from app.controllers.goal_controller import GoalController
 from app.ui.styles import styles_main_window
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt, pyqtSignal, QDateTime
 from app.database.database_connection import *
+from datetime import datetime
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -44,7 +47,7 @@ class MainWindow(QMainWindow):
         if len(data) != 0:
             for count, row in enumerate(data):
                 item = QListWidgetItem(f"{row[1]}")
-                ID_task, title, description = zip(select_task_from_database(count)[0])
+                ID_task, title, description, start_date, end_date = zip(select_task_from_database(count)[0])
                 item.setData(Qt.UserRole, ID_task)
                 item.setData(Qt.UserRole + 1, title)
                 item.setData(Qt.UserRole + 2, description)
@@ -67,18 +70,20 @@ class MainWindow(QMainWindow):
         
         self.detail_window.show()
 
-    def onAddGoalWindowClosed(self, title, description): # TODO
+    def onAddGoalWindowClosed(self, title, description, start_date, end_date): # TODO
         ID_task = get_number_of_tasks_from_database()
         item = QListWidgetItem(title)
         item.setData(Qt.UserRole, ID_task)
         item.setData(Qt.UserRole + 1, title)
         item.setData(Qt.UserRole + 2, description)
+        item.setData(Qt.UserRole + 3, start_date)
+        item.setData(Qt.UserRole + 4, end_date)
         
         self.goal_list.addItem(item)
         self.create_task_list()
 
 class AddWGoalWindow(QWidget):
-    window_closed = pyqtSignal(str, str)
+    window_closed = pyqtSignal(str, str, str, str)
 
     def __init__(self):
         super().__init__()
@@ -105,14 +110,14 @@ class AddWGoalWindow(QWidget):
         self.end_date_button.setFixedWidth(100) 
         layout.addWidget(self.end_date_button)
 
-        self.startdate = QDateEdit(self)
-        self.startdate.setDisplayFormat("yyyy-MM-dd")
+        self.start_date = QDateTimeEdit(self)
+        self.start_date.setDisplayFormat("yyyy-MM-dd hh:mm:ss")
         
-        layout.addWidget(self.startdate)
+        layout.addWidget(self.start_date)
 
-        self.enddate = QDateEdit(self)
-        self.enddate.setDisplayFormat("yyyy-MM-dd")
-        layout.addWidget(self.enddate)
+        self.end_date = QDateTimeEdit(self)
+        self.end_date.setDisplayFormat("yyyy-MM-dd hh:mm:ss")
+        layout.addWidget(self.end_date)
 
         self.calendar = QCalendarWidget(self)
         self.calendar.setFixedSize(330, 330)
@@ -136,28 +141,38 @@ class AddWGoalWindow(QWidget):
         self.calendar.setVisible(not self.calendar.isVisible())
         
     def date_clicked(self, qDate):
+        
         if self.active_date_edit == 'start':
-            self.startdate.setDate(qDate)
+            self.start_date.setDateTime(QDateTime.currentDateTime())
+            self.start_date = self.start_date.dateTime().toString("yyyy-MM-dd hh:mm:ss")
         if self.active_date_edit == 'end':
-            self.enddate.setDate(qDate)
+            self.end_date.setDateTime(QDateTime.currentDateTime())
+            self.end_date = self.end_date.dateTime().toString("yyyy-MM-dd hh:mm:ss")
+        self.calendar.setVisible(not self.calendar.isVisible())
             
     def closeEvent(self, event):
         self.window_closed.emit(self.title_input.text(), 
-                                self.description_input.text())
+                                self.description_input.text(),
+                                self.start_date, self.end_date)
         
         super().closeEvent(event)
 
     def add_goal(self):
         title = self.title_input.text()
         description = self.description_input.text()
+        
         if len(title) != 0 and len(description) != 0:
             ID_task = get_number_of_tasks_from_database()
-            insert_task_to_database(ID_task, title, description)
+            insert_task_to_database(ID_task, title, description, self.start_date, 
+                                    self.end_date)
             self.goal_controller.add_goal(title, description)
             item = QListWidgetItem(f"{title}")
             item.setData(Qt.UserRole, ID_task)
             item.setData(Qt.UserRole + 1, title)
             item.setData(Qt.UserRole + 2, description)
+
+            item.setData(Qt.UserRole + 3, self.start_date)
+            item.setData(Qt.UserRole + 4, self.end_date)
             self.close()
 
     def toggle_calendar(self):
