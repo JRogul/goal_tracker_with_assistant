@@ -22,14 +22,14 @@ def select_task_from_database(ID_task):
     connection.close()
     return data
 
-def insert_task_to_database(ID_task, title, description, start_date, end_date):
+def insert_task_to_database(ID_task, title, description, start_date, end_date, created_at):
     connection = connect_to_database()
     ID_task = get_number_of_tasks_from_database()
     cursor = connection.cursor()
 
-    cursor.execute('''INSERT INTO public."Tasks" (id, task, description, start_date, end_date) 
-                   VALUES (%s, %s, %s, %s, %s)''', 
-                    (ID_task, title, description, start_date, end_date))
+    cursor.execute('''INSERT INTO public."Tasks" (id, task, description, start_date, end_date, created_at) 
+                   VALUES (%s, %s, %s, %s, %s, %s)''', 
+                    (ID_task, title, description, start_date, end_date, created_at))
     connection.commit()
     connection.close()
 

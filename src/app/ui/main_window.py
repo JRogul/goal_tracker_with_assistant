@@ -47,7 +47,7 @@ class MainWindow(QMainWindow):
         if len(data) != 0:
             for count, row in enumerate(data):
                 item = QListWidgetItem(f"{row[1]}")
-                ID_task, title, description, start_date, end_date = zip(select_task_from_database(count)[0])
+                ID_task, title, description, start_date, end_date, created_at = zip(select_task_from_database(count)[0])
                 item.setData(Qt.UserRole, ID_task)
                 item.setData(Qt.UserRole + 1, title)
                 item.setData(Qt.UserRole + 2, description)
@@ -163,8 +163,11 @@ class AddWGoalWindow(QWidget):
         
         if len(title) != 0 and len(description) != 0:
             ID_task = get_number_of_tasks_from_database()
+            self.created_at = QDateTimeEdit()
+            self.created_at.setDateTime(QDateTime.currentDateTime())
+            self.created_at = self.created_at.dateTime().toString("yyyy-MM-dd hh:mm:ss")
             insert_task_to_database(ID_task, title, description, self.start_date, 
-                                    self.end_date)
+                                    self.end_date, self.created_at)
             self.goal_controller.add_goal(title, description)
             item = QListWidgetItem(f"{title}")
             item.setData(Qt.UserRole, ID_task)
