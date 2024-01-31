@@ -2,7 +2,7 @@ import psycopg2
 import json
 
 def connect_to_database():
-    with open("src\database.json", 'r') as file:
+    with open("src\config.json", 'r') as file:
         config = json.load(file)
     user = config['user']
     password = config['password']

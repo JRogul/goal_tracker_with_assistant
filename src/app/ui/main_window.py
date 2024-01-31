@@ -28,14 +28,6 @@ class MainWindow(QMainWindow):
         
         layout.addWidget(self.goal_list)
 
-        self.title_input = QLineEdit() 
-        self.title_input.setText('Write your goal')
-        layout.addWidget(self.title_input)
-
-        self.description_input = QLineEdit()
-        self.description_input.setText('Add description')  # Input for goal description
-        layout.addWidget(self.description_input)
-
         add_button = QPushButton('Create Goal')
         add_button.clicked.connect(self.add_goal)
         layout.addWidget(add_button)
@@ -70,7 +62,7 @@ class MainWindow(QMainWindow):
         
         self.detail_window.show()
 
-    def onAddGoalWindowClosed(self, title, description, start_date, end_date): # TODO
+    def onAddGoalWindowClosed(self, title, description, start_date, end_date, created_at): # TODO
         ID_task = get_number_of_tasks_from_database()
         item = QListWidgetItem(title)
         item.setData(Qt.UserRole, ID_task)
@@ -78,12 +70,13 @@ class MainWindow(QMainWindow):
         item.setData(Qt.UserRole + 2, description)
         item.setData(Qt.UserRole + 3, start_date)
         item.setData(Qt.UserRole + 4, end_date)
+        item.setData(Qt.UserRole + 5, created_at)
         
         self.goal_list.addItem(item)
         self.create_task_list()
 
 class AddWGoalWindow(QWidget):
-    window_closed = pyqtSignal(str, str, str, str)
+    window_closed = pyqtSignal(str, str, str, str, str)
 
     def __init__(self):
         super().__init__()
@@ -144,16 +137,16 @@ class AddWGoalWindow(QWidget):
         
         if self.active_date_edit == 'start':
             self.start_date.setDateTime(QDateTime.currentDateTime())
-            self.start_date = self.start_date.dateTime().toString("yyyy-MM-dd hh:mm:ss")
+            
         if self.active_date_edit == 'end':
             self.end_date.setDateTime(QDateTime.currentDateTime())
-            self.end_date = self.end_date.dateTime().toString("yyyy-MM-dd hh:mm:ss")
+            
         self.calendar.setVisible(not self.calendar.isVisible())
             
     def closeEvent(self, event):
         self.window_closed.emit(self.title_input.text(), 
                                 self.description_input.text(),
-                                self.start_date, self.end_date)
+                                self.start_date, self.end_date, self.created_at)
         
         super().closeEvent(event)
 
@@ -163,6 +156,10 @@ class AddWGoalWindow(QWidget):
         
         if len(title) != 0 and len(description) != 0:
             ID_task = get_number_of_tasks_from_database()
+           
+            self.start_date = self.start_date.dateTime().toString("yyyy-MM-dd hh:mm:ss")
+            self.end_date = self.end_date.dateTime().toString("yyyy-MM-dd hh:mm:ss")
+            
             self.created_at = QDateTimeEdit()
             self.created_at.setDateTime(QDateTime.currentDateTime())
             self.created_at = self.created_at.dateTime().toString("yyyy-MM-dd hh:mm:ss")
@@ -176,6 +173,7 @@ class AddWGoalWindow(QWidget):
 
             item.setData(Qt.UserRole + 3, self.start_date)
             item.setData(Qt.UserRole + 4, self.end_date)
+            item.setData(Qt.UserRole + 5, self.created_at)
             self.close()
 
     def toggle_calendar(self):
@@ -201,13 +199,19 @@ class DetailWindow(QWidget):
 
         layout = QVBoxLayout()
         item_id = item.data(Qt.UserRole)
-        additional_data1 = item.data(Qt.UserRole + 1)
-        additional_data2 = item.data(Qt.UserRole + 2)
+        task = item.data(Qt.UserRole + 1)
+        description = item.data(Qt.UserRole + 2)
+        start_date = item.data(Qt.UserRole + 3)
+        end_date = item.data(Qt.UserRole + 4)
+        created_at = item.data(Qt.UserRole + 5)
 
         # Creating formatted text for the label
         label_text = (f"Item ID: {item_id}<br>"
-                      f"Your task: {additional_data1}<br>"
-                      f"Description of the task: {additional_data2}")
+                      f"Your task: {task}<br>"
+                      f"Description of the task: {description}<br>"
+                      f"Start date: {start_date}<br>"
+                      f"End of the task date: {end_date}<br>"
+                      f"Created at: {created_at}<br>")
 
         self.label = QLabel(label_text)
         self.label.setAlignment(Qt.AlignTop | Qt.AlignLeft)
@@ -245,27 +249,3 @@ class DetailWindow(QWidget):
         self.is_closed = True
         
         super().closeEvent(event)
-
-    # def open_calendar(self):
-    #     self.calendar_window = CalendarWindow()
-    #     self.calendar_window.show()
-
-# class CalendarWindow(QWidget):
-#     def __init__(self):
-#         super().__init__()
-
-#         layout = QVBoxLayout(self)
-        
-#         self.calendar = QCalendarWidget(self)
-#         self.calendar.clicked.connect(self.onDateClicked)
-#         layout.addWidget(self.calendar)
-#         print('aaaa')
-#         self.setGeometry(100, 100, 100, 100)
-#         self.setWindowTitle('Calendar')
-#         self.show()
-
-#     def onDateClicked(self, date):
-#         print(date)
-#         formatted_date = date.toString("yyyy-MM-dd")
-#         self.label.setText(f"Selected Date: {formatted_date}")
-#         print(self.label)
