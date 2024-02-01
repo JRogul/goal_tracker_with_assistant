@@ -43,6 +43,9 @@ class MainWindow(QMainWindow):
                 item.setData(Qt.UserRole, ID_task)
                 item.setData(Qt.UserRole + 1, title)
                 item.setData(Qt.UserRole + 2, description)
+                item.setData(Qt.UserRole + 3, start_date)
+                item.setData(Qt.UserRole + 4, end_date)
+                item.setData(Qt.UserRole + 5, created_at)
                 self.goal_list.addItem(item)
 
     def on_item_clicked(self, item: QListWidgetItem):
@@ -52,7 +55,7 @@ class MainWindow(QMainWindow):
         self.detail_window.show()  
         
     def onDetailWindowClosed(self, ID_task, delete_task):
-        print('onDetaiLWindow')
+        print(f'Delted ID: {ID_task}')
         if delete_task:
             self.goal_list.takeItem(ID_task)
 
@@ -81,7 +84,7 @@ class AddWGoalWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle(f"Add Goal")
-        self.setGeometry(250, 250, 800, 800)
+        self.setGeometry(250, 250, 500, 500)
         self.goal_controller = GoalController()
         layout = QVBoxLayout()
         self.item = QListWidgetItem()
@@ -198,20 +201,20 @@ class DetailWindow(QWidget):
         self.delete_task = False
 
         layout = QVBoxLayout()
-        item_id = item.data(Qt.UserRole)
-        task = item.data(Qt.UserRole + 1)
-        description = item.data(Qt.UserRole + 2)
-        start_date = item.data(Qt.UserRole + 3)
-        end_date = item.data(Qt.UserRole + 4)
-        created_at = item.data(Qt.UserRole + 5)
+        self.ID_task = item.data(Qt.UserRole)
+        self.task = item.data(Qt.UserRole + 1)
+        self.description = item.data(Qt.UserRole + 2)
+        self.start_date = item.data(Qt.UserRole + 3)
+        self.end_date = item.data(Qt.UserRole + 4)
+        self.created_at = item.data(Qt.UserRole + 5)
 
         # Creating formatted text for the label
-        label_text = (f"Item ID: {item_id}<br>"
-                      f"Your task: {task}<br>"
-                      f"Description of the task: {description}<br>"
-                      f"Start date: {start_date}<br>"
-                      f"End of the task date: {end_date}<br>"
-                      f"Created at: {created_at}<br>")
+        label_text = (f"Item ID: {self.ID_task}<br>"
+                      f"Your task: {self.task}<br>"
+                      f"Description of the task: {self.description}<br>"
+                      f"Start date: {self.start_date}<br>"
+                      f"End of the task date: {self.end_date}<br>"
+                      f"Created at: {self.created_at}<br>")
 
         self.label = QLabel(label_text)
         self.label.setAlignment(Qt.AlignTop | Qt.AlignLeft)
